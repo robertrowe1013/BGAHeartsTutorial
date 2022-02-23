@@ -22,7 +22,7 @@ require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
 class TutorialHeartsRob extends Table
 {
-	function __construct( )
+	function __construct()
 	{
         // Your global variables labels:
         //  Here, you can assign labels to global variables you are using for this game.
@@ -31,18 +31,17 @@ class TutorialHeartsRob extends Table
         //  the corresponding ID in gameoptions.inc.php.
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
-        
-        self::initGameStateLabels( array( 
-            //    "my_first_global_variable" => 10,
-            //    "my_second_global_variable" => 11,
-            //      ...
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
-            //      ...
-        ) );        
+        self::initGameStateLabels(array( 
+            "currentHandType" => 10, 
+            "trickColor" => 11, 
+            "alreadyPlayedHearts" => 12,
+            ));
+
+        $this->cards = self::getNew("module.common.deck");
+        $this->cards->init("card");      
 	}
 	
-    protected function getGameName( )
+    protected function getGameName()
     {
 		// Used for translations and stuff. Please do not modify.
         return "tutorialheartsrob";
@@ -78,6 +77,32 @@ class TutorialHeartsRob extends Table
         self::reloadPlayersBasicInfos();
         
         /************ Start the game initialization *****/
+
+        // Init global values with their initial values
+
+        // Note: hand types: 0 = give 3 cards to player on the left
+        //                   1 = give 3 cards to player on the right
+        //                   2 = give 3 cards to player opposite
+        //                   3 = keep cards
+        self::setGameStateInitialValue( 'currentHandType', 0 );
+        
+        // Set current trick color to zero (= no trick color)
+        self::setGameStateInitialValue( 'trickColor', 0 );
+        
+        // Mark if we already played hearts during this hand
+        self::setGameStateInitialValue( 'alreadyPlayedHearts', 0 );
+
+        // Create cards
+        $cards = array ();
+        foreach ( $this->colors as $color_id => $color ) {
+            // spade, heart, diamond, club
+            for ($value = 2; $value <= 14; $value ++) {
+                //  2, 3, 4, ... K, A
+                $cards [] = array ('type' => $color_id,'type_arg' => $value,'nbr' => 1 );
+            }
+        }
+        
+        $this->cards->createCards( $cards, 'deck' );
 
         // Init global values with their initial values
         //self::setGameStateInitialValue( 'my_first_global_variable', 0 );
