@@ -104,6 +104,15 @@ class TutorialHeartsRob extends Table
         
         $this->cards->createCards( $cards, 'deck' );
 
+        // Shuffle deck
+        $this->cards->shuffle('deck');
+        // Deal 13 cards to each players
+        $players = self::loadPlayersBasicInfos();
+        foreach ( $players as $player_id => $player ) {
+            $cards = $this->cards->pickCards(13, 'deck', $player_id);
+        }
+
+
         // Init global values with their initial values
         //self::setGameStateInitialValue( 'my_first_global_variable', 0 );
         
@@ -142,7 +151,11 @@ class TutorialHeartsRob extends Table
         $result['players'] = self::getCollectionFromDb( $sql );
   
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
-  
+        // Cards in player hand
+        $result['hand'] = $this->cards->getCardsInLocation( 'hand', $current_player_id );
+        
+        // Cards played on the table
+        $result['cardsontable'] = $this->cards->getCardsInLocation( 'cardsontable' );
         return $result;
     }
 
